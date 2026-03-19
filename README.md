@@ -53,9 +53,8 @@ animated grid of particles:
 **No R installation required.** The rendered output is a single
 self-contained HTML file.
 
-1. Go to the `output/` folder in this repository
-2. Download `tucson_warming_ojsV30-Final.html`
-3. Open it in any modern web browser (Chrome, Firefox, Safari, Edge)
+1. Download `tucson-vanishing-winters.html` from the root of this repository
+2. Open it in any modern web browser (Chrome, Firefox, Safari, Edge)
 
 ---
 
@@ -76,7 +75,7 @@ install.packages(c("nasapower", "dplyr", "tidyr", "lubridate", "jsonlite",
 
 **Render**
 ```bash
-quarto render script/tucson_warming_ojsV30-Final.qmd
+quarto render tucson-vanishing-winters.qmd
 ```
 
 > The data acquisition chunk calls the NASA POWER API live and caches
@@ -108,7 +107,7 @@ warming signal — a warm January is judged against January's own average,
 ensuring no month is penalized or rewarded by comparison to a different
 season.
 
-**Generative Particle Field Visualization**
+**Generative Particle Field**
 
 The grid is divided into 41 columns (one per year) and 12 rows (one per
 month), creating 492 cells. Each cell is assigned hundreds of small
@@ -146,11 +145,9 @@ while remaining anchored to the underlying data.
 tucson-vanishing-winters/
 ├── README.md
 ├── LICENSE
-├── .gitignore
-├── script/
-│   └── tucson_warming_ojsV30-Final.qmd     # Source document
-└── output/
-    └── tucson_warming_ojsV30-Final.html    # Self-contained rendered output
+├── tucson-vanishing-winters.qmd            # Source document
+├── tucson-vanishing-winters.html           # Self-contained rendered output
+└── output/                                 # Supporting output files
 ```
 
 ---
