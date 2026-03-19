@@ -1,0 +1,443 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Tucson · Month × Year Particle Field · 1984–2024</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#07070e; font-family:'Georgia',serif; overflow:hidden; }
+canvas { display:block; position:absolute; top:0; left:0; }
+#wrap { position:relative; width:100%; }
+#border-frame {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  border:1px solid rgba(220,200,155,0.35);
+  pointer-events:none; z-index:999;
+}
+#header {
+  position:absolute; top:0; left:0; right:0; z-index:20;
+  background:rgba(7,7,14,0.93);
+  border-bottom:1px solid rgba(220,200,155,0.07);
+  padding:9px 20px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+#header .title-block { display:flex; flex-direction:column; gap:1px; white-space:nowrap; }
+#header .title-main { font-size:22px; font-weight:700; color:rgba(220,200,160,0.92); letter-spacing:0.01em; line-height:1.1; }
+#header .title-sub  { font-size:10px; font-style:italic; color:rgba(220,200,160,0.82); letter-spacing:0.04em; margin-top:1px; }
+#header .desc  { font-size:9.5px; color:rgba(220,200,160,0.82); line-height:1.5; text-align:center; flex:1; }
+#header .keys  { display:flex; gap:14px; white-space:nowrap; }
+#header .keys span {
+  font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase;
+  display:flex; align-items:center; gap:6px; color:rgba(220,200,160,0.82);
+}
+#header .keys span::before { content:''; width:18px; height:2.5px; border-radius:1px; flex-shrink:0; }
+.k-warm::before { background:#e05530; }
+.k-cool::before { background:#5588e0; }
+.k-sum::before  { background:#e8a020; }
+#ui {
+  position:absolute; bottom:0; left:0; right:0; z-index:20;
+  padding:8px 22px 12px;
+  background:linear-gradient(transparent, rgba(7,7,14,0.97) 36%);
+  display:flex; align-items:center; gap:18px;
+}
+.stat { text-align:center; min-width:90px; }
+.stat .val { font-size:14px; font-weight:700; }
+.stat .lbl { font-size:7px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(220,200,160,0.82); margin-top:2px; line-height:1.4; }
+#slider-wrap { flex:1; display:flex; flex-direction:column; gap:4px; }
+#slider-wrap label { font-size:7.5px; letter-spacing:0.13em; text-transform:uppercase; color:rgba(220,200,160,0.82); text-align:center; }
+input[type=range] {
+  width:100%; height:4px; cursor:pointer;
+  -webkit-appearance:none; appearance:none; border-radius:2px; outline:none; border:none;
+  background:linear-gradient(to right,#1a3388,#882211);
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+  background:#c8b080; border:2px solid rgba(220,195,150,0.5); cursor:pointer;
+}
+#play-btn {
+  width:38px; height:38px; border-radius:50%; flex-shrink:0;
+  background:rgba(7,7,14,0.6);
+  border:1.5px solid rgba(220,200,160,0.5);
+  color:rgba(220,200,160,0.88); font-size:14px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:border-color 0.2s, color 0.2s;
+}
+#play-btn:hover { border-color:rgba(220,200,160,0.9); color:rgba(255,240,200,1); }
+#bar-panel {
+  position:absolute; left:0; right:0; z-index:15;
+  background:rgba(7,7,14,0.88);
+  border-top:1px solid rgba(220,200,155,0.07);
+  border-bottom:1px solid rgba(220,200,155,0.06);
+}
+#bar-c { display:block; width:100%; }
+#month-gutter {
+  position:absolute; left:0; z-index:18;
+  width:48px;
+  background:linear-gradient(to right, rgba(7,7,14,0.97) 70%, rgba(7,7,14,0));
+  display:flex; flex-direction:column; pointer-events:none;
+}
+#month-gutter .m-label {
+  display:flex; align-items:center;
+  padding-left:8px;
+  font-family:'Georgia',serif;
+  font-size:11px;
+  color:rgba(220,200,160,0.88);
+  letter-spacing:0.04em;
+  flex-shrink:0;
+  transition: font-size 0.15s ease, color 0.15s ease;
+}
+</style>
+</head>
+<body>
+<div id="border-frame"></div>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="month-gutter">
+    <div class="m-label">Jan</div>
+    <div class="m-label">Feb</div>
+    <div class="m-label">Mar</div>
+    <div class="m-label">Apr</div>
+    <div class="m-label">May</div>
+    <div class="m-label">Jun</div>
+    <div class="m-label">Jul</div>
+    <div class="m-label">Aug</div>
+    <div class="m-label">Sep</div>
+    <div class="m-label">Oct</div>
+    <div class="m-label">Nov</div>
+    <div class="m-label">Dec</div>
+  </div>
+  <div id="bar-panel">
+    <canvas id="bar-c"></canvas>
+  </div>
+  <div id="header">
+    <div class="title-block">
+      <span class="title-main">Tucson’s Vanishing Winters</span>
+      <span class="title-sub">Watch the Blues Fade and Reds Take Over</span>
+    </div>
+    <div class="desc">
+      Y-axis = month of year (Jan at top → Dec at bottom) · X-axis = year (1984 → 2024)<br>
+      Each particle sits in its month row and year column · color = temperature anomaly vs 41-yr baseline
+    </div>
+    <div class="keys">
+      <span class="k-warm">Warmer than baseline</span>
+      <span class="k-cool">Cooler than baseline</span>
+      <span class="k-sum">Summer peak (Jun–Aug)</span>
+    </div>
+  </div>
+  <div id="ui">
+    <button id="play-btn" title="Play / Pause">▶</button>
+    <div id="slider-wrap">
+      <label>◄ drag to highlight a year ►</label>
+      <input type="range" id="slider" min="1984" max="2024" value="1984" step="1">
+      <label id="yr-lbl" style="color:rgba(220,200,160,0.88); font-size:9px; letter-spacing:0.1em;">
+        Year: 1984 — hover a month row to inspect
+      </label>
+    </div>
+    <div class="stat">
+      <div class="val" id="stat-anom" style="color:#e05530">—</div>
+      <div class="lbl">Anomaly for<br>highlighted cell</div>
+    </div>
+  </div>
+</div>
+<script>
+// ── Data bridge: R exports these via jsonlite::toJSON(), injected here as JS constants ──
+const ANOMALY_DATA = [{"year":1984,"month":1,"anomaly":-1.0159},{"year":1984,"month":2,"anomaly":-0.8951},{"year":1984,"month":3,"anomaly":0.0724},{"year":1984,"month":4,"anomaly":-2.001},{"year":1984,"month":5,"anomaly":2.8983},{"year":1984,"month":6,"anomaly":-1.8256},{"year":1984,"month":7,"anomaly":-2.639},{"year":1984,"month":8,"anomaly":-2.2066},{"year":1984,"month":9,"anomaly":-1.1356},{"year":1984,"month":10,"anomaly":-3.9107},{"year":1984,"month":11,"anomaly":-1.562},{"year":1984,"month":12,"anomaly":-0.7261},{"year":1985,"month":1,"anomaly":-2.5859},{"year":1985,"month":2,"anomaly":-2.3451},{"year":1985,"month":3,"anomaly":-1.6876},{"year":1985,"month":4,"anomaly":0.879},{"year":1985,"month":5,"anomaly":-0.1217},{"year":1985,"month":6,"anomaly":0.7644},{"year":1985,"month":7,"anomaly":0.141},{"year":1985,"month":8,"anomaly":-0.0866},{"year":1985,"month":9,"anomaly":-2.8956},{"year":1985,"month":10,"anomaly":-1.6307},{"year":1985,"month":11,"anomaly":-1.802},{"year":1985,"month":12,"anomaly":0.0939},{"year":1986,"month":1,"anomaly":2.5941},{"year":1986,"month":2,"anomaly":1.1049},{"year":1986,"month":3,"anomaly":1.3824},{"year":1986,"month":4,"anomaly":0.179},{"year":1986,"month":5,"anomaly":0.2883},{"year":1986,"month":6,"anomaly":0.0444},{"year":1986,"month":7,"anomaly":-1.529},{"year":1986,"month":8,"anomaly":-0.5166},{"year":1986,"month":9,"anomaly":-2.2756},{"year":1986,"month":10,"anomaly":-1.9007},{"year":1986,"month":11,"anomaly":-0.822},{"year":1986,"month":12,"anomaly":-0.6561},{"year":1987,"month":1,"anomaly":-1.7159},{"year":1987,"month":2,"anomaly":-1.1251},{"year":1987,"month":3,"anomaly":-2.6576},{"year":1987,"month":4,"anomaly":0.639},{"year":1987,"month":5,"anomaly":-1.7517},{"year":1987,"month":6,"anomaly":-0.0656},{"year":1987,"month":7,"anomaly":-0.539},{"year":1987,"month":8,"anomaly":-1.5666},{"year":1987,"month":9,"anomaly":-1.7156},{"year":1987,"month":10,"anomaly":1.0193},{"year":1987,"month":11,"anomaly":-2.252},{"year":1987,"month":12,"anomaly":-2.2061},{"year":1988,"month":1,"anomaly":-1.2859},{"year":1988,"month":2,"anomaly":0.8149},{"year":1988,"month":3,"anomaly":-0.6276},{"year":1988,"month":4,"anomaly":-1.011},{"year":1988,"month":5,"anomaly":-0.7117},{"year":1988,"month":6,"anomaly":-0.0556},{"year":1988,"month":7,"anomaly":-0.519},{"year":1988,"month":8,"anomaly":-0.6666},{"year":1988,"month":9,"anomaly":-1.6556},{"year":1988,"month":10,"anomaly":1.3493},{"year":1988,"month":11,"anomaly":-1.142},{"year":1988,"month":12,"anomaly":-1.4861},{"year":1989,"month":1,"anomaly":-1.9559},{"year":1989,"month":2,"anomaly":0.9349},{"year":1989,"month":3,"anomaly":2.2524},{"year":1989,"month":4,"anomaly":3.599},{"year":1989,"month":5,"anomaly":0.7483},{"year":1989,"month":6,"anomaly":-0.2656},{"year":1989,"month":7,"anomaly":0.561},{"year":1989,"month":8,"anomaly":-1.1366},{"year":1989,"month":9,"anomaly":0.2744},{"year":1989,"month":10,"anomaly":-1.0007},{"year":1989,"month":11,"anomaly":-0.272},{"year":1989,"month":12,"anomaly":-0.2061},{"year":1990,"month":1,"anomaly":-1.2159},{"year":1990,"month":2,"anomaly":-1.8851},{"year":1990,"month":3,"anomaly":-0.4076},{"year":1990,"month":4,"anomaly":0.379},{"year":1990,"month":5,"anomaly":-1.2217},{"year":1990,"month":6,"anomaly":0.8444},{"year":1990,"month":7,"anomaly":-2.009},{"year":1990,"month":8,"anomaly":-3.2466},{"year":1990,"month":9,"anomaly":-0.9356},{"year":1990,"month":10,"anomaly":-0.5607},{"year":1990,"month":11,"anomaly":-0.822},{"year":1990,"month":12,"anomaly":-1.3961},{"year":1991,"month":1,"anomaly":-0.9659},{"year":1991,"month":2,"anomaly":1.3349},{"year":1991,"month":3,"anomaly":-3.7176},{"year":1991,"month":4,"anomaly":-1.981},{"year":1991,"month":5,"anomaly":-2.4717},{"year":1991,"month":6,"anomaly":-2.4156},{"year":1991,"month":7,"anomaly":-0.309},{"year":1991,"month":8,"anomaly":-0.5366},{"year":1991,"month":9,"anomaly":-1.1356},{"year":1991,"month":10,"anomaly":0.5193},{"year":1991,"month":11,"anomaly":-1.762},{"year":1991,"month":12,"anomaly":-0.5161},{"year":1992,"month":1,"anomaly":-2.3859},{"year":1992,"month":2,"anomaly":-0.1251},{"year":1992,"month":3,"anomaly":-1.9276},{"year":1992,"month":4,"anomaly":1.099},{"year":1992,"month":5,"anomaly":-0.4617},{"year":1992,"month":6,"anomaly":-1.6156},{"year":1992,"month":7,"anomaly":-1.129},{"year":1992,"month":8,"anomaly":-1.0966},{"year":1992,"month":9,"anomaly":0.0244},{"year":1992,"month":10,"anomaly":0.5193},{"year":1992,"month":11,"anomaly":-3.142},{"year":1992,"month":12,"anomaly":-1.3161},{"year":1993,"month":1,"anomaly":0.0541},{"year":1993,"month":2,"anomaly":-1.7651},{"year":1993,"month":3,"anomaly":-0.5876},{"year":1993,"month":4,"anomaly":-0.421},{"year":1993,"month":5,"anomaly":-0.2417},{"year":1993,"month":6,"anomaly":-0.9956},{"year":1993,"month":7,"anomaly":-1.239},{"year":1993,"month":8,"anomaly":-0.6466},{"year":1993,"month":9,"anomaly":-1.0156},{"year":1993,"month":10,"anomaly":-0.9907},{"year":1993,"month":11,"anomaly":-1.902},{"year":1993,"month":12,"anomaly":-0.3861},{"year":1994,"month":1,"anomaly":0.1541},{"year":1994,"month":2,"anomaly":-1.1051},{"year":1994,"month":3,"anomaly":-0.1076},{"year":1994,"month":4,"anomaly":-0.521},{"year":1994,"month":5,"anomaly":-0.9817},{"year":1994,"month":6,"anomaly":1.1244},{"year":1994,"month":7,"anomaly":0.751},{"year":1994,"month":8,"anomaly":1.1134},{"year":1994,"month":9,"anomaly":0.3944},{"year":1994,"month":10,"anomaly":-1.7807},{"year":1994,"month":11,"anomaly":-3.332},{"year":1994,"month":12,"anomaly":-0.5461},{"year":1995,"month":1,"anomaly":-1.5859},{"year":1995,"month":2,"anomaly":1.7449},{"year":1995,"month":3,"anomaly":-0.5776},{"year":1995,"month":4,"anomaly":-2.641},{"year":1995,"month":5,"anomaly":-3.4717},{"year":1995,"month":6,"anomaly":-2.3156},{"year":1995,"month":7,"anomaly":1.211},{"year":1995,"month":8,"anomaly":1.3034},{"year":1995,"month":9,"anomaly":0.5044},{"year":1995,"month":10,"anomaly":0.9993},{"year":1995,"month":11,"anomaly":1.828},{"year":1995,"month":12,"anomaly":1.2539},{"year":1996,"month":1,"anomaly":1.1941},{"year":1996,"month":2,"anomaly":2.2749},{"year":1996,"month":3,"anomaly":-0.2576},{"year":1996,"month":4,"anomaly":1.149},{"year":1996,"month":5,"anomaly":1.5983},{"year":1996,"month":6,"anomaly":1.0644},{"year":1996,"month":7,"anomaly":0.271},{"year":1996,"month":8,"anomaly":0.0034},{"year":1996,"month":9,"anomaly":-1.7756},{"year":1996,"month":10,"anomaly":-1.3807},{"year":1996,"month":11,"anomaly":-0.422},{"year":1996,"month":12,"anomaly":0.6039},{"year":1997,"month":1,"anomaly":-0.1659},{"year":1997,"month":2,"anomaly":-0.9451},{"year":1997,"month":3,"anomaly":2.3724},{"year":1997,"month":4,"anomaly":-1.211},{"year":1997,"month":5,"anomaly":2.6583},{"year":1997,"month":6,"anomaly":-1.5156},{"year":1997,"month":7,"anomaly":0.631},{"year":1997,"month":8,"anomaly":0.0734},{"year":1997,"month":9,"anomaly":1.2244},{"year":1997,"month":10,"anomaly":-1.5007},{"year":1997,"month":11,"anomaly":0.148},{"year":1997,"month":12,"anomaly":-2.7961},{"year":1998,"month":1,"anomaly":0.0041},{"year":1998,"month":2,"anomaly":-3.0751},{"year":1998,"month":3,"anomaly":-2.5076},{"year":1998,"month":4,"anomaly":-4.261},{"year":1998,"month":5,"anomaly":-3.1217},{"year":1998,"month":6,"anomaly":-2.2156},{"year":1998,"month":7,"anomaly":0.251},{"year":1998,"month":8,"anomaly":0.5034},{"year":1998,"month":9,"anomaly":0.2044},{"year":1998,"month":10,"anomaly":-0.9907},{"year":1998,"month":11,"anomaly":0.228},{"year":1998,"month":12,"anomaly":-1.0461},{"year":1999,"month":1,"anomaly":1.1641},{"year":1999,"month":2,"anomaly":1.9649},{"year":1999,"month":3,"anomaly":0.5624},{"year":1999,"month":4,"anomaly":-3.821},{"year":1999,"month":5,"anomaly":-0.9517},{"year":1999,"month":6,"anomaly":-1.0556},{"year":1999,"month":7,"anomaly":-1.719},{"year":1999,"month":8,"anomaly":-0.1866},{"year":1999,"month":9,"anomaly":0.3344},{"year":1999,"month":10,"anomaly":1.1493},{"year":1999,"month":11,"anomaly":3.138},{"year":1999,"month":12,"anomaly":-0.2261},{"year":2000,"month":1,"anomaly":2.2241},{"year":2000,"month":2,"anomaly":1.7349},{"year":2000,"month":3,"anomaly":-0.8876},{"year":2000,"month":4,"anomaly":1.929},{"year":2000,"month":5,"anomaly":2.5883},{"year":2000,"month":6,"anomaly":-0.4156},{"year":2000,"month":7,"anomaly":0.731},{"year":2000,"month":8,"anomaly":-0.2566},{"year":2000,"month":9,"anomaly":1.3244},{"year":2000,"month":10,"anomaly":-2.1807},{"year":2000,"month":11,"anomaly":-5.042},{"year":2000,"month":12,"anomaly":0.9039},{"year":2001,"month":1,"anomaly":-2.0359},{"year":2001,"month":2,"anomaly":-1.7651},{"year":2001,"month":3,"anomaly":-0.4376},{"year":2001,"month":4,"anomaly":-1.261},{"year":2001,"month":5,"anomaly":1.9783},{"year":2001,"month":6,"anomaly":0.1444},{"year":2001,"month":7,"anomaly":-0.499},{"year":2001,"month":8,"anomaly":0.2534},{"year":2001,"month":9,"anomaly":1.4544},{"year":2001,"month":10,"anomaly":1.2593},{"year":2001,"month":11,"anomaly":1.708},{"year":2001,"month":12,"anomaly":-1.5561},{"year":2002,"month":1,"anomaly":-0.7159},{"year":2002,"month":2,"anomaly":0.9249},{"year":2002,"month":3,"anomaly":-0.5476},{"year":2002,"month":4,"anomaly":2.169},{"year":2002,"month":5,"anomaly":0.1683},{"year":2002,"month":6,"anomaly":1.4344},{"year":2002,"month":7,"anomaly":0.131},{"year":2002,"month":8,"anomaly":0.4034},{"year":2002,"month":9,"anomaly":0.7344},{"year":2002,"month":10,"anomaly":-1.1207},{"year":2002,"month":11,"anomaly":0.818},{"year":2002,"month":12,"anomaly":-1.0161},{"year":2003,"month":1,"anomaly":3.2941},{"year":2003,"month":2,"anomaly":-0.2851},{"year":2003,"month":3,"anomaly":-0.9576},{"year":2003,"month":4,"anomaly":-1.851},{"year":2003,"month":5,"anomaly":0.8683},{"year":2003,"month":6,"anomaly":-0.1856},{"year":2003,"month":7,"anomaly":1.061},{"year":2003,"month":8,"anomaly":0.2234},{"year":2003,"month":9,"anomaly":1.0144},{"year":2003,"month":10,"anomaly":2.2593},{"year":2003,"month":11,"anomaly":-1.082},{"year":2003,"month":12,"anomaly":0.0739},{"year":2004,"month":1,"anomaly":0.2241},{"year":2004,"month":2,"anomaly":-2.4551},{"year":2004,"month":3,"anomaly":3.3624},{"year":2004,"month":4,"anomaly":-0.891},{"year":2004,"month":5,"anomaly":0.8183},{"year":2004,"month":6,"anomaly":-0.2356},{"year":2004,"month":7,"anomaly":-0.009},{"year":2004,"month":8,"anomaly":-0.1966},{"year":2004,"month":9,"anomaly":-0.3556},{"year":2004,"month":10,"anomaly":-1.2007},{"year":2004,"month":11,"anomaly":-2.962},{"year":2004,"month":12,"anomaly":-0.3161},{"year":2005,"month":1,"anomaly":0.8641},{"year":2005,"month":2,"anomaly":-0.2451},{"year":2005,"month":3,"anomaly":-1.7276},{"year":2005,"month":4,"anomaly":-0.991},{"year":2005,"month":5,"anomaly":0.3483},{"year":2005,"month":6,"anomaly":-0.4856},{"year":2005,"month":7,"anomaly":2.091},{"year":2005,"month":8,"anomaly":-0.9366},{"year":2005,"month":9,"anomaly":0.2344},{"year":2005,"month":10,"anomaly":0.0493},{"year":2005,"month":11,"anomaly":1.418},{"year":2005,"month":12,"anomaly":1.8939},{"year":2006,"month":1,"anomaly":1.0341},{"year":2006,"month":2,"anomaly":1.8049},{"year":2006,"month":3,"anomaly":-1.7376},{"year":2006,"month":4,"anomaly":0.199},{"year":2006,"month":5,"anomaly":1.6483},{"year":2006,"month":6,"anomaly":1.2844},{"year":2006,"month":7,"anomaly":0.021},{"year":2006,"month":8,"anomaly":-1.4866},{"year":2006,"month":9,"anomaly":-2.1156},{"year":2006,"month":10,"anomaly":-1.4007},{"year":2006,"month":11,"anomaly":1.018},{"year":2006,"month":12,"anomaly":-0.9061},{"year":2007,"month":1,"anomaly":-2.8159},{"year":2007,"month":2,"anomaly":-0.2451},{"year":2007,"month":3,"anomaly":1.4224},{"year":2007,"month":4,"anomaly":0.039},{"year":2007,"month":5,"anomaly":0.9983},{"year":2007,"month":6,"anomaly":0.4244},{"year":2007,"month":7,"anomaly":0.081},{"year":2007,"month":8,"anomaly":-0.0766},{"year":2007,"month":9,"anomaly":-0.3256},{"year":2007,"month":10,"anomaly":-0.3007},{"year":2007,"month":11,"anomaly":3.008},{"year":2007,"month":12,"anomaly":-2.1361},{"year":2008,"month":1,"anomaly":-1.2759},{"year":2008,"month":2,"anomaly":-0.5151},{"year":2008,"month":3,"anomaly":-0.4576},{"year":2008,"month":4,"anomaly":-0.261},{"year":2008,"month":5,"anomaly":-1.9417},{"year":2008,"month":6,"anomaly":0.8344},{"year":2008,"month":7,"anomaly":-1.459},{"year":2008,"month":8,"anomaly":-1.1366},{"year":2008,"month":9,"anomaly":0.0044},{"year":2008,"month":10,"anomaly":0.0093},{"year":2008,"month":11,"anomaly":0.708},{"year":2008,"month":12,"anomaly":0.0839},{"year":2009,"month":1,"anomaly":0.9641},{"year":2009,"month":2,"anomaly":0.6949},{"year":2009,"month":3,"anomaly":0.9924},{"year":2009,"month":4,"anomaly":-0.691},{"year":2009,"month":5,"anomaly":2.0183},{"year":2009,"month":6,"anomaly":-2.2456},{"year":2009,"month":7,"anomaly":0.511},{"year":2009,"month":8,"anomaly":0.9134},{"year":2009,"month":9,"anomaly":0.5944},{"year":2009,"month":10,"anomaly":-1.5007},{"year":2009,"month":11,"anomaly":1.618},{"year":2009,"month":12,"anomaly":-1.4361},{"year":2010,"month":1,"anomaly":-0.0459},{"year":2010,"month":2,"anomaly":-1.6951},{"year":2010,"month":3,"anomaly":-2.4876},{"year":2010,"month":4,"anomaly":-2.181},{"year":2010,"month":5,"anomaly":-2.0517},{"year":2010,"month":6,"anomaly":-0.2456},{"year":2010,"month":7,"anomaly":0.281},{"year":2010,"month":8,"anomaly":0.3534},{"year":2010,"month":9,"anomaly":1.1344},{"year":2010,"month":10,"anomaly":0.0593},{"year":2010,"month":11,"anomaly":-1.652},{"year":2010,"month":12,"anomaly":2.4239},{"year":2011,"month":1,"anomaly":-0.0059},{"year":2011,"month":2,"anomaly":-1.9451},{"year":2011,"month":3,"anomaly":1.9424},{"year":2011,"month":4,"anomaly":0.609},{"year":2011,"month":5,"anomaly":-1.8217},{"year":2011,"month":6,"anomaly":0.1644},{"year":2011,"month":7,"anomaly":-0.219},{"year":2011,"month":8,"anomaly":1.6634},{"year":2011,"month":9,"anomaly":1.0944},{"year":2011,"month":10,"anomaly":0.9793},{"year":2011,"month":11,"anomaly":-1.272},{"year":2011,"month":12,"anomaly":-2.0561},{"year":2012,"month":1,"anomaly":1.5341},{"year":2012,"month":2,"anomaly":0.2349},{"year":2012,"month":3,"anomaly":-0.4176},{"year":2012,"month":4,"anomaly":1.099},{"year":2012,"month":5,"anomaly":1.3083},{"year":2012,"month":6,"anomaly":0.8044},{"year":2012,"month":7,"anomaly":-1.429},{"year":2012,"month":8,"anomaly":0.6934},{"year":2012,"month":9,"anomaly":-0.9256},{"year":2012,"month":10,"anomaly":0.5393},{"year":2012,"month":11,"anomaly":2.408},{"year":2012,"month":12,"anomaly":0.5339},{"year":2013,"month":1,"anomaly":-1.8159},{"year":2013,"month":2,"anomaly":-2.5951},{"year":2013,"month":3,"anomaly":1.9324},{"year":2013,"month":4,"anomaly":0.909},{"year":2013,"month":5,"anomaly":0.5083},{"year":2013,"month":6,"anomaly":1.3844},{"year":2013,"month":7,"anomaly":-0.699},{"year":2013,"month":8,"anomaly":-0.0366},{"year":2013,"month":9,"anomaly":0.0544},{"year":2013,"month":10,"anomaly":-1.4407},{"year":2013,"month":11,"anomaly":0.808},{"year":2013,"month":12,"anomaly":-0.3161},{"year":2014,"month":1,"anomaly":2.6941},{"year":2014,"month":2,"anomaly":3.2649},{"year":2014,"month":3,"anomaly":1.7224},{"year":2014,"month":4,"anomaly":0.929},{"year":2014,"month":5,"anomaly":0.3083},{"year":2014,"month":6,"anomaly":1.0744},{"year":2014,"month":7,"anomaly":-0.749},{"year":2014,"month":8,"anomaly":-1.1966},{"year":2014,"month":9,"anomaly":-0.2156},{"year":2014,"month":10,"anomaly":1.1993},{"year":2014,"month":11,"anomaly":-0.412},{"year":2014,"month":12,"anomaly":0.7339},{"year":2015,"month":1,"anomaly":1.0541},{"year":2015,"month":2,"anomaly":3.3149},{"year":2015,"month":3,"anomaly":2.8124},{"year":2015,"month":4,"anomaly":-0.291},{"year":2015,"month":5,"anomaly":-2.2117},{"year":2015,"month":6,"anomaly":0.5844},{"year":2015,"month":7,"anomaly":-1.539},{"year":2015,"month":8,"anomaly":1.1234},{"year":2015,"month":9,"anomaly":0.3744},{"year":2015,"month":10,"anomaly":0.5393},{"year":2015,"month":11,"anomaly":-1.352},{"year":2015,"month":12,"anomaly":-0.9761},{"year":2016,"month":1,"anomaly":-0.1759},{"year":2016,"month":2,"anomaly":3.0749},{"year":2016,"month":3,"anomaly":2.5724},{"year":2016,"month":4,"anomaly":0.319},{"year":2016,"month":5,"anomaly":-0.9617},{"year":2016,"month":6,"anomaly":1.1544},{"year":2016,"month":7,"anomaly":1.141},{"year":2016,"month":8,"anomaly":-0.4966},{"year":2016,"month":9,"anomaly":-0.9856},{"year":2016,"month":10,"anomaly":2.9493},{"year":2016,"month":11,"anomaly":1.528},{"year":2016,"month":12,"anomaly":2.2439},{"year":2017,"month":1,"anomaly":-0.0459},{"year":2017,"month":2,"anomaly":2.0449},{"year":2017,"month":3,"anomaly":3.5924},{"year":2017,"month":4,"anomaly":1.989},{"year":2017,"month":5,"anomaly":-0.1017},{"year":2017,"month":6,"anomaly":1.7644},{"year":2017,"month":7,"anomaly":-0.799},{"year":2017,"month":8,"anomaly":0.2234},{"year":2017,"month":9,"anomaly":-0.5156},{"year":2017,"month":10,"anomaly":2.8393},{"year":2017,"month":11,"anomaly":5.358},{"year":2017,"month":12,"anomaly":3.0439},{"year":2018,"month":1,"anomaly":3.6441},{"year":2018,"month":2,"anomaly":1.3949},{"year":2018,"month":3,"anomaly":1.0524},{"year":2018,"month":4,"anomaly":3.009},{"year":2018,"month":5,"anomaly":1.1183},{"year":2018,"month":6,"anomaly":0.2444},{"year":2018,"month":7,"anomaly":0.481},{"year":2018,"month":8,"anomaly":-0.0066},{"year":2018,"month":9,"anomaly":1.4844},{"year":2018,"month":10,"anomaly":-1.5307},{"year":2018,"month":11,"anomaly":-0.432},{"year":2018,"month":12,"anomaly":0.4139},{"year":2019,"month":1,"anomaly":0.0041},{"year":2019,"month":2,"anomaly":-2.1351},{"year":2019,"month":3,"anomaly":0.3124},{"year":2019,"month":4,"anomaly":0.489},{"year":2019,"month":5,"anomaly":-3.0917},{"year":2019,"month":6,"anomaly":-0.1956},{"year":2019,"month":7,"anomaly":1.051},{"year":2019,"month":8,"anomaly":1.5234},{"year":2019,"month":9,"anomaly":0.2044},{"year":2019,"month":10,"anomaly":-0.2207},{"year":2019,"month":11,"anomaly":1.878},{"year":2019,"month":12,"anomaly":-0.0061},{"year":2020,"month":1,"anomaly":0.6741},{"year":2020,"month":2,"anomaly":-0.0951},{"year":2020,"month":3,"anomaly":-0.6776},{"year":2020,"month":4,"anomaly":0.339},{"year":2020,"month":5,"anomaly":2.2783},{"year":2020,"month":6,"anomaly":0.1144},{"year":2020,"month":7,"anomaly":1.941},{"year":2020,"month":8,"anomaly":3.4834},{"year":2020,"month":9,"anomaly":2.1044},{"year":2020,"month":10,"anomaly":3.1393},{"year":2020,"month":11,"anomaly":2.678},{"year":2020,"month":12,"anomaly":0.1139},{"year":2021,"month":1,"anomaly":0.6441},{"year":2021,"month":2,"anomaly":0.6449},{"year":2021,"month":3,"anomaly":-0.7976},{"year":2021,"month":4,"anomaly":2.139},{"year":2021,"month":5,"anomaly":0.8583},{"year":2021,"month":6,"anomaly":2.1344},{"year":2021,"month":7,"anomaly":-1.289},{"year":2021,"month":8,"anomaly":-0.3966},{"year":2021,"month":9,"anomaly":0.4044},{"year":2021,"month":10,"anomaly":-1.0607},{"year":2021,"month":11,"anomaly":3.608},{"year":2021,"month":12,"anomaly":2.5239},{"year":2022,"month":1,"anomaly":1.1341},{"year":2022,"month":2,"anomaly":-0.7851},{"year":2022,"month":3,"anomaly":0.5324},{"year":2022,"month":4,"anomaly":2.049},{"year":2022,"month":5,"anomaly":1.3183},{"year":2022,"month":6,"anomaly":1.0344},{"year":2022,"month":7,"anomaly":0.471},{"year":2022,"month":8,"anomaly":-0.3666},{"year":2022,"month":9,"anomaly":0.4344},{"year":2022,"month":10,"anomaly":-0.5507},{"year":2022,"month":11,"anomaly":-2.132},{"year":2022,"month":12,"anomaly":0.5139},{"year":2023,"month":1,"anomaly":-1.2159},{"year":2023,"month":2,"anomaly":-1.9551},{"year":2023,"month":3,"anomaly":-1.5076},{"year":2023,"month":4,"anomaly":0.909},{"year":2023,"month":5,"anomaly":0.1583},{"year":2023,"month":6,"anomaly":-1.3756},{"year":2023,"month":7,"anomaly":4.101},{"year":2023,"month":8,"anomaly":2.8434},{"year":2023,"month":9,"anomaly":2.0444},{"year":2023,"month":10,"anomaly":2.7293},{"year":2023,"month":11,"anomaly":1.978},{"year":2023,"month":12,"anomaly":2.3339},{"year":2024,"month":1,"anomaly":-0.1259},{"year":2024,"month":2,"anomaly":0.6749},{"year":2024,"month":3,"anomaly":-1.1876},{"year":2024,"month":4,"anomaly":-0.761},{"year":2024,"month":5,"anomaly":0.2083},{"year":2024,"month":6,"anomaly":1.3044},{"year":2024,"month":7,"anomaly":2.411},{"year":2024,"month":8,"anomaly":1.7834},{"year":2024,"month":9,"anomaly":2.3244},{"year":2024,"month":10,"anomaly":4.0493},{"year":2024,"month":11,"anomaly":-0.312},{"year":2024,"month":12,"anomaly":4.4439}]; // array of {year, month, anomaly} — 492 rows (41 years × 12 months)
+const HOTTEST = {"year":2017,"anom":1.62}; // {year, anom} — used to annotate the hottest year column
+const COOLEST = {"year":1998,"anom":-1.34}; // {year, anom} — used to annotate the coolest year column
+
+// Look up anomaly for a given month (0-indexed) and year
+function monthAnom(month0, year) {
+  const row = ANOMALY_DATA.find(d => d.month === month0 + 1 && d.year === year);
+  return row ? row.anomaly : 0;
+}
+const canvas   = document.getElementById("c");
+const ctx      = canvas.getContext("2d");
+const barCanvas= document.getElementById("bar-c");
+const barCtx   = barCanvas.getContext("2d");
+const wrap     = document.getElementById("wrap");
+const barPanel = document.getElementById("bar-panel");
+const gutter   = document.getElementById("month-gutter");
+const gutterLabels = gutter.querySelectorAll(".m-label");
+const slider   = document.getElementById("slider");
+const HEADER_H = 72, UI_H = 66, BAR_H = 160; // fixed layout heights in CSS pixels
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const YEARS  = Array.from({length:41}, (_,i) => 1984+i);
+let W, FIELD_H, ROW_H, COL_W;
+function resize() {
+  W       = window.innerWidth;
+  FIELD_H = window.innerHeight - HEADER_H - UI_H - BAR_H;
+  ROW_H   = FIELD_H / 12;
+  COL_W   = W / 41;
+  wrap.style.height      = (FIELD_H + HEADER_H + BAR_H + UI_H) + "px";
+  canvas.style.top       = HEADER_H + "px";
+  canvas.width           = W * devicePixelRatio;
+  canvas.height          = FIELD_H * devicePixelRatio;
+  canvas.style.width     = W + "px";
+  canvas.style.height    = FIELD_H + "px";
+  barPanel.style.top     = (HEADER_H + FIELD_H) + "px";
+  barPanel.style.height  = BAR_H + "px";
+  barCanvas.width        = W * devicePixelRatio;
+  barCanvas.height       = BAR_H * devicePixelRatio;
+  barCanvas.style.height = BAR_H + "px";
+  // gutter: align with particle canvas
+  gutter.style.top    = HEADER_H + "px";
+  gutter.style.height = FIELD_H + "px";
+  gutterLabels.forEach(el => { el.style.height = (FIELD_H/12) + "px"; });
+}
+resize();
+window.addEventListener("resize", () => { resize(); boot(); drawBarChart(); });
+// ── Fractional Brownian Motion noise (hand-coded, no external library) ──────
+// hash(): pseudo-random number from a single integer using sine trick
+function hash(n) { return Math.sin(n*127.1)*43758.5453 - Math.floor(Math.sin(n*127.1)*43758.5453); }
+// smoothN(): bilinear interpolation of hash values on a 2D grid (value noise)
+function smoothN(x, y) {
+  const ix=Math.floor(x), iy=Math.floor(y), fx=x-ix, fy=y-iy;
+  const ux=fx*fx*(3-2*fx), uy=fy*fy*(3-2*fy); // smoothstep curve for softer blending
+  const a=hash(ix+iy*57), b=hash(ix+1+iy*57), c=hash(ix+(iy+1)*57), d=hash(ix+1+(iy+1)*57);
+  return a+(b-a)*ux+(c-a)*uy+(d-b-c+a)*ux*uy;
+}
+// fbm(): layered noise at 3 frequencies — each layer adds finer detail (octaves)
+function fbm(x, y, seed=0) {
+  return smoothN(x+seed,y+seed)*0.5 + smoothN(x*2+seed,y*2+seed)*0.25 + smoothN(x*4,y*4)*0.125;
+}
+const NP = 1400; // total number of particles in the field
+let particles = [];
+// Create one particle assigned to a random (month, year) cell
+function makeParticle() {
+  const month0   = Math.floor(Math.random()*12);
+  const year     = YEARS[Math.floor(Math.random()*YEARS.length)];
+  const anom     = monthAnom(month0, year);
+  const xc       = (YEARS.indexOf(year)+0.5)*COL_W;
+  const yc       = (month0+0.5)*ROW_H;
+  const isSummer = month0 >= 5 && month0 <= 7;
+  return {
+    month0, year, anom, xc, yc, isSummer,
+    x: xc+(Math.random()-0.5)*COL_W*1.1, y: yc+(Math.random()-0.5)*ROW_H*0.85,
+    vx:0, vy:0, seed: month0*3.7, age: Math.random()*110,
+    maxAge: 80+Math.random()*140,
+    size: (isSummer?0.9:0.65)+Math.random()*1.3*Math.min(1,Math.abs(anom)*0.9+0.3), // larger dot = stronger anomaly
+    speed: 0.35+Math.random()*0.75,
+  };
+}
+function boot() { particles = Array.from({length:NP}, makeParticle); }
+// Maps anomaly value to an RGBA color string:
+//   warm summer (Jun–Aug) → amber, warm non-summer → red, cool → blue
+function anomColor(anom, isSummer, alpha) {
+  const v=Math.max(-1.5,Math.min(1.5,anom)); let r,g,b;
+  if(isSummer&&v>0){ r=Math.round(220+Math.min(35,v*25)); g=Math.round(140-v*55); b=10; } // amber
+  else if(v>0){ r=Math.round(180+v*55); g=Math.round(50-v*30); b=15; }                    // red
+  else{ const f=-v; r=15; g=Math.round(75+f*55); b=Math.round(185+f*65); }                // blue
+  return "rgba("+r+","+g+","+b+","+alpha+")";
+}
+let highlightYear=1984, hoverMonth=null;
+let isPlaying=false, playTimer=null;
+const playBtn=document.getElementById("play-btn");
+function startPlay(){
+  isPlaying=true; playBtn.textContent="⏸";
+  playTimer=setInterval(()=>{
+    let yr=parseInt(slider.value)+1;
+    if(yr>2024) yr=1984;
+    slider.value=yr; updateYear();
+  },400);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent="▶";
+  clearInterval(playTimer);
+}
+playBtn.addEventListener("click",()=>{ isPlaying?stopPlay():startPlay(); });
+function fmt(v){ return (v>=0?"+":"")+v.toFixed(2)+"°C"; }
+function updateYear() {
+  highlightYear=parseInt(slider.value);
+  document.getElementById("yr-lbl").textContent="Year: "+highlightYear+(hoverMonth!==null?" · "+MONTHS[hoverMonth]:" — hover a month row to inspect");
+  updateStatBox();
+  drawBarChart();
+}
+function updateStatBox() {
+  if(hoverMonth!==null){
+    const a=monthAnom(hoverMonth,highlightYear);
+    document.getElementById("stat-anom").textContent=fmt(a);
+    document.getElementById("stat-anom").style.color=a<0?"#5588e0":(hoverMonth>=5&&hoverMonth<=7)?"#e8a020":"#e05530";
+  } else {
+    document.getElementById("stat-anom").textContent="—";
+  }
+}
+slider.addEventListener("input", updateYear);
+canvas.addEventListener("mousemove", e => {
+  const rect=canvas.getBoundingClientRect(), y=e.clientY-rect.top;
+  hoverMonth=Math.floor(y/ROW_H);
+  if(hoverMonth<0||hoverMonth>11) hoverMonth=null;
+  updateStatBox();
+  document.getElementById("yr-lbl").textContent="Year: "+highlightYear+(hoverMonth!==null?" · "+MONTHS[hoverMonth]:" — hover a month row to inspect");
+  drawBarChart();
+});
+canvas.addEventListener("mouseleave", () => { hoverMonth=null; updateStatBox(); drawBarChart(); });
+function drawBarChart() {
+  const dpr=devicePixelRatio;
+  const cW=barCanvas.width, cH=barCanvas.height;
+  barCtx.clearRect(0,0,cW,cH);
+  const PAD_L=44*dpr, PAD_R=16*dpr, PAD_T=28*dpr, PAD_B=26*dpr;
+  const MONTH_LABEL_H=36*dpr;
+  const chartH=cH-PAD_T-PAD_B-MONTH_LABEL_H;
+  const chartW=cW-PAD_L-PAD_R;
+  const anoms=MONTHS.map((m,i)=>({label:m,anom:monthAnom(i,highlightYear),month0:i}));
+  const maxAbs=Math.max(1.5,...anoms.map(d=>Math.abs(d.anom)));
+  const barW=chartW/12;
+  const zeroY=PAD_T+chartH*0.5;
+  // monthLabelY: always below deepest possible anomaly label (zeroY + chartH/2 + 11 + 9 px font + 6 gap)
+  const monthLabelY=PAD_T+chartH+26*dpr;
+  // section title left only
+  barCtx.fillStyle="rgba(220,200,160,0.88)";
+  barCtx.font="bold "+(8*dpr)+"px Georgia"; barCtx.textAlign="left";
+  barCtx.fillText("MONTHLY ANOMALY PROFILE",PAD_L,16*dpr);
+  // hottest/coldest year labels — sit at top of bar panel, below the particle field axis
+  const hottestBX=((YEARS.indexOf(HOTTEST.year)+0.5)*COL_W)*devicePixelRatio;
+  barCtx.fillStyle="rgba(220,55,25,0.92)"; barCtx.font=(7.5*dpr)+"px Georgia"; barCtx.textAlign="center";
+  barCtx.fillText("hottest year", hottestBX, 10*dpr);
+  const coolestBX=((YEARS.indexOf(COOLEST.year)+0.5)*COL_W)*devicePixelRatio;
+  barCtx.fillStyle="rgba(40,100,220,0.92)";
+  barCtx.fillText("coldest year", coolestBX, 10*dpr);
+  // subtle grid lines + y-axis labels
+  [-maxAbs,0,maxAbs].forEach(t=>{
+    const ty=PAD_T+chartH*(1-(t+maxAbs)/(2*maxAbs));
+    barCtx.strokeStyle="rgba(255,255,255,0.05)"; barCtx.lineWidth=0.5*dpr;
+    barCtx.setLineDash([3*dpr,5*dpr]);
+    barCtx.beginPath(); barCtx.moveTo(PAD_L,ty); barCtx.lineTo(PAD_L+chartW,ty); barCtx.stroke();
+    barCtx.setLineDash([]);
+    barCtx.fillStyle="rgba(220,200,160,0.82)"; barCtx.font=(7*dpr)+"px Georgia"; barCtx.textAlign="right";
+    const lbl=t===0?"0":(t>0?"+":"")+t.toFixed(1)+"°C";
+    barCtx.fillText(lbl,PAD_L-5*dpr,ty+3*dpr);
+  });
+  // zero line
+  barCtx.strokeStyle="rgba(200,175,130,0.25)"; barCtx.lineWidth=0.8*dpr;
+  barCtx.beginPath(); barCtx.moveTo(PAD_L,zeroY); barCtx.lineTo(PAD_L+chartW,zeroY); barCtx.stroke();
+  // bars
+  anoms.forEach((d,i)=>{
+    const isSummer=d.month0>=5&&d.month0<=7;
+    const v=Math.max(-1.5,Math.min(1.5,d.anom)); let r,g,b;
+    if(isSummer&&v>0){r=Math.round(220+Math.min(35,v*25));g=Math.round(140-v*55);b=10;}
+    else if(v>0){r=Math.round(180+v*55);g=Math.round(50-v*30);b=15;}
+    else{const f=-v;r=15;g=Math.round(75+f*55);b=Math.round(185+f*65);}
+    const isHov=(hoverMonth===d.month0);
+    const alpha=isHov?1.0:0.72;
+    const col="rgba("+r+","+g+","+b+","+alpha+")";
+    const colFull="rgba("+r+","+g+","+b+",1)";
+    const barPx=(Math.abs(d.anom)/(2*maxAbs))*chartH;
+    const x=PAD_L+i*barW;
+    const y=d.anom>=0?zeroY-barPx:zeroY;
+    const cx=x+barW/2;
+    // bar fill
+    barCtx.fillStyle=col;
+    barCtx.fillRect(x+barW*0.1,y,barW*0.8,barPx);
+    // highlight border
+    if(isHov){
+      barCtx.strokeStyle="rgba(220,195,130,0.75)";
+      barCtx.lineWidth=1.2*dpr;
+      barCtx.strokeRect(x+barW*0.1,y,barW*0.8,barPx);
+    }
+    // anomaly value — outer tip, bar color; larger + brighter on hover
+    const anomSize=isHov?11*dpr:9*dpr;
+    barCtx.font=(anomSize)+"px Georgia"; barCtx.textAlign="center";
+    barCtx.fillStyle=colFull;
+    const anomLbl=(d.anom>=0?"+":"")+d.anom.toFixed(2);
+    const anomY=d.anom>=0 ? y-6*dpr : y+barPx+anomSize+4*dpr;
+    barCtx.fillText(anomLbl,cx,anomY);
+    // month label — pinned to bottom; larger + brighter on hover
+    const mSize=isHov?13*dpr:10*dpr;
+    barCtx.font="bold "+mSize+"px Georgia"; barCtx.textAlign="center";
+    barCtx.fillStyle=isHov?"rgba(255,240,200,1)":"rgba("+r+","+g+","+b+",0.82)";
+    barCtx.fillText(d.label,cx,monthLabelY);
+  });
+}
+function drawGrid() {
+  const dpr=devicePixelRatio; ctx.save();
+  MONTHS.forEach((m,i) => {
+    if(i%2===0){ ctx.fillStyle="rgba(255,255,255,0.012)"; ctx.fillRect(0,i*ROW_H*dpr,W*dpr,ROW_H*dpr); }
+    if(i>=5&&i<=7){ ctx.fillStyle="rgba(200,130,10,0.025)"; ctx.fillRect(0,i*ROW_H*dpr,W*dpr,ROW_H*dpr); }
+    if(i===hoverMonth){ ctx.fillStyle="rgba(220,195,130,0.04)"; ctx.fillRect(0,i*ROW_H*dpr,W*dpr,ROW_H*dpr); }
+    ctx.strokeStyle="rgba(255,255,255,0.04)"; ctx.lineWidth=0.5*dpr;
+    ctx.beginPath(); ctx.moveTo(0,i*ROW_H*dpr); ctx.lineTo(W*dpr,i*ROW_H*dpr); ctx.stroke();
+    // update gutter label highlight state
+    gutterLabels[i].style.color      = i===hoverMonth ? "rgba(255,240,200,1.0)" : "rgba(220,200,160,0.88)";
+    gutterLabels[i].style.fontWeight = i===hoverMonth ? "700" : "400";
+    gutterLabels[i].style.fontSize   = i===hoverMonth ? "17px" : "11px";
+  });
+  [1984,1990,2000,2010,2020,2024].forEach(yr => {
+    const x=((YEARS.indexOf(yr)+0.5)*COL_W)*dpr;
+    ctx.strokeStyle="rgba(200,175,120,0.08)"; ctx.lineWidth=0.5*dpr;
+    ctx.setLineDash([2*dpr,6*dpr]);
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,FIELD_H*dpr); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="rgba(160,135,85,0.3)"; ctx.font=(7.5*dpr)+"px Georgia"; ctx.textAlign="center";
+    ctx.fillText(yr,x,(FIELD_H-3)*dpr);
+  });
+  const hx=((YEARS.indexOf(highlightYear)+0.5)*COL_W)*dpr;
+  const hG=ctx.createLinearGradient(hx-15*dpr,0,hx+15*dpr,0);
+  hG.addColorStop(0,"rgba(220,195,130,0)"); hG.addColorStop(0.5,"rgba(220,195,130,0.07)"); hG.addColorStop(1,"rgba(220,195,130,0)");
+  ctx.fillStyle=hG; ctx.fillRect(hx-15*dpr,0,30*dpr,FIELD_H*dpr);
+  ctx.strokeStyle="rgba(220,195,130,0.25)"; ctx.lineWidth=1*dpr;
+  ctx.beginPath(); ctx.moveTo(hx,0); ctx.lineTo(hx,FIELD_H*dpr); ctx.stroke();
+  // large year label for highlighted year — travels with slider
+  ctx.fillStyle="rgba(220,195,130,0.92)"; ctx.font="bold "+(18*dpr)+"px Georgia"; ctx.textAlign="center";
+  ctx.fillText(highlightYear,hx,(FIELD_H-14)*dpr);
+  const triS=7*dpr;
+  // ── Hottest year: red column glow + triangle + year ──
+  const hottestX=((YEARS.indexOf(HOTTEST.year)+0.5)*COL_W)*dpr;
+  const hotG=ctx.createLinearGradient(hottestX-COL_W*dpr,0,hottestX+COL_W*dpr,0);
+  hotG.addColorStop(0,"rgba(200,40,15,0)"); hotG.addColorStop(0.5,"rgba(200,40,15,0.12)"); hotG.addColorStop(1,"rgba(200,40,15,0)");
+  ctx.fillStyle=hotG; ctx.fillRect(hottestX-COL_W*dpr,0,COL_W*2*dpr,FIELD_H*dpr);
+  ctx.fillStyle="rgba(220,55,25,0.95)";
+  ctx.beginPath(); ctx.moveTo(hottestX,(FIELD_H-2)*dpr); ctx.lineTo(hottestX-triS,(FIELD_H-2+triS*1.6)*dpr); ctx.lineTo(hottestX+triS,(FIELD_H-2+triS*1.6)*dpr); ctx.closePath(); ctx.fill();
+  ctx.font="bold "+(7.5*dpr)+"px Georgia"; ctx.textAlign="center";
+  ctx.fillText(HOTTEST.year, hottestX, (FIELD_H-5)*dpr);
+  // ── Coolest year: blue column glow + triangle + year ──
+  const coolestX=((YEARS.indexOf(COOLEST.year)+0.5)*COL_W)*dpr;
+  const coolG=ctx.createLinearGradient(coolestX-COL_W*dpr,0,coolestX+COL_W*dpr,0);
+  coolG.addColorStop(0,"rgba(30,90,210,0)"); coolG.addColorStop(0.5,"rgba(30,90,210,0.12)"); coolG.addColorStop(1,"rgba(30,90,210,0)");
+  ctx.fillStyle=coolG; ctx.fillRect(coolestX-COL_W*dpr,0,COL_W*2*dpr,FIELD_H*dpr);
+  ctx.fillStyle="rgba(40,100,220,0.95)";
+  ctx.beginPath(); ctx.moveTo(coolestX,(FIELD_H-2)*dpr); ctx.lineTo(coolestX-triS,(FIELD_H-2+triS*1.6)*dpr); ctx.lineTo(coolestX+triS,(FIELD_H-2+triS*1.6)*dpr); ctx.closePath(); ctx.fill();
+  ctx.font="bold "+(7.5*dpr)+"px Georgia"; ctx.textAlign="center";
+  ctx.fillText(COOLEST.year, coolestX, (FIELD_H-5)*dpr);
+  ctx.restore();
+}
+// Advance one particle by one frame: apply noise force + spring tether, then draw
+function stepParticle(p) {
+  // Sample fBm noise field at the current particle position to get a flow angle
+  const nx=p.x/W*4+t*0.005, ny=p.y/FIELD_H*4;
+  const nv=fbm(nx,ny,p.seed), angle=nv*Math.PI*3;
+  // Accelerate toward noise direction + spring force pulling back to home cell (xc, yc)
+  p.vx+=Math.cos(angle)*p.speed*0.10+(p.xc-p.x)*0.004;
+  p.vy+=Math.sin(angle)*p.speed*0.08+(p.yc-p.y)*0.018;
+  p.vx*=0.90; p.vy*=0.90; p.x+=p.vx; p.y+=p.vy; p.age++; // dampen velocity, integrate position
+  // Highlighted particles (selected year or hovered month) are brighter and larger
+  const isHighlightYear=YEARS.indexOf(p.year)===YEARS.indexOf(highlightYear);
+  const isHighlightMonth=hoverMonth!==null&&p.month0===hoverMonth;
+  const isHighlighted=isHighlightYear||isHighlightMonth;
+  // Fade in at birth, fade out near end of life
+  const life=p.age/p.maxAge;
+  const baseA=life<0.1?life*10:life>0.85?(1-life)*6.7:1;
+  const alpha=Math.min(isHighlighted?0.92:0.55, baseA*(isHighlighted?0.92:0.55));
+  const size=p.size*(isHighlighted?1.8:1)*devicePixelRatio;
+  ctx.beginPath();
+  ctx.arc(p.x*devicePixelRatio,p.y*devicePixelRatio,Math.max(0.4,size),0,Math.PI*2);
+  ctx.fillStyle=anomColor(p.anom,p.isSummer,alpha); ctx.fill();
+  // Recycle particle if it has aged out or drifted off canvas
+  if(p.age>p.maxAge||p.x<-8||p.x>W+8||p.y<-8||p.y>FIELD_H+8){ Object.assign(p,makeParticle(),{age:0}); }
+}
+let t=0; // global frame counter — drives the slow drift of the noise field over time
+// Main animation loop — called once per frame via requestAnimationFrame
+function frame() {
+  // Semi-transparent fill instead of clearRect creates a motion trail effect
+  ctx.fillStyle="rgba(7,7,14,0.08)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+  // Subtle left-to-right color gradient reinforces the cool (1984) → warm (2024) narrative
+  const bgG=ctx.createLinearGradient(0,0,canvas.width,0);
+  bgG.addColorStop(0,"rgba(8,12,45,0.03)"); bgG.addColorStop(0.5,"rgba(7,7,14,0.01)"); bgG.addColorStop(1,"rgba(55,12,5,0.05)");
+  ctx.fillStyle=bgG; ctx.fillRect(0,0,canvas.width,canvas.height);
+  drawGrid(); particles.forEach(stepParticle); t++;
+  requestAnimationFrame(frame);
+}
+ctx.fillStyle="#07070e"; ctx.fillRect(0,0,canvas.width,canvas.height);
+boot(); updateYear(); drawBarChart(); frame(); startPlay();
+</script>
+</body>
+</html>
