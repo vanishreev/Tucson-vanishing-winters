@@ -107,7 +107,7 @@ warming signal — a warm January is judged against January's own average,
 ensuring no month is penalized or rewarded by comparison to a different
 season.
 
-**Generative Particle Field**
+**Generative Particle Field Visualization**
 
 The grid is divided into 41 columns (one per year) and 12 rows (one per
 month), creating 492 cells. Each cell is assigned hundreds of small
@@ -147,7 +147,8 @@ tucson-vanishing-winters/
 ├── LICENSE
 ├── tucson-vanishing-winters.qmd            # Source document
 ├── tucson-vanishing-winters.html           # Self-contained rendered output
-└── output/                                 # Supporting output files
+└── output/
+    └── tucson-vanishing-winters-interactive.html   # Standalone interactive particle field
 ```
 
 ---
