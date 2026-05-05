@@ -62,7 +62,7 @@ animated grid of particles:
 |---|---|
 | 🌐 Full report (Quarto document + all charts) | [Live Site](https://vanishreev.github.io/Tucson-vanishing-winters/) |
 | ✨ Standalone interactive particle field | [Open Interactive](https://vanishreev.github.io/Tucson-vanishing-winters/output/tucson-vanishing-winters-interactive.html) |
-| 💾 Offline | Download `tucson-vanishing-winters.html` from the script folder of this repo and open in any modern browser |
+| 💾 Offline | Download `tucson-vanishing-winters.html` from the code folder of this repo and open in any modern browser |
 
 ---
 
@@ -85,7 +85,7 @@ install.packages(c("nasapower", "dplyr", "tidyr", "lubridate", "jsonlite",
 Run the following from the project root directory (`tucson-vanishing-winters/`):
 
 ```bash
-quarto render script/tucson-vanishing-winters.qmd
+quarto render code/tucson-vanishing-winters.qmd
 ```
 
 > The raw data is pre-downloaded and stored in `data/tucson_T2M_monthly_1984-2024.csv`. No API call or internet connection is required.
@@ -93,7 +93,7 @@ quarto render script/tucson-vanishing-winters.qmd
 **Expected output**
 
 After rendering, two files are created:
-- `script/tucson-vanishing-winters.html` — full report with all charts
+- `code/tucson-vanishing-winters.html` — full report with all charts
 - `output/tucson-vanishing-winters-interactive.html` — standalone interactive particle field
 
 Open either file in any modern browser.
@@ -164,7 +164,7 @@ tucson-vanishing-winters/
 ├── .gitignore
 ├── data/
 │   └── tucson_T2M_monthly_1984-2024.csv     
-├── script/
+├── code/
 │   ├── tucson-vanishing-winters.qmd          
 │   └── tucson-vanishing-winters.html          
 └── output/
