@@ -15,6 +15,8 @@ format:
     code-fold: true
     code-summary: "Show code"
     embed-resources: true
+project:
+  output-dir: output
 execute:
   echo: true
   warning: false
@@ -51,25 +53,32 @@ library(ggtext)      # element_markdown() for rich text in ggplot2 titles
 library(glue)        # String interpolation for annotations
 library(knitr)       # kable() for summary tables
 library(scales)      # Label formatting in ggplot2
+library(here)        # Project-relative file paths
 ```
 
 ---
 
 ### Data Source
 
-Monthly mean 2-metre air temperature for Tucson, Arizona was retrieved from the NASA POWER agroclimatology API, covering the full 41-year period 1984–2024. The chunk is cached to avoid redundant API calls on re-render.
+Monthly mean 2-metre air temperature for Tucson, Arizona was retrieved from the NASA POWER agroclimatology API, covering the full 41-year period 1984–2024.
 
 ```{r}
 #| label: data-acquisition
-#| cache: true
 
-raw <- get_power(
-  community    = "ag",                           # agroclimatology dataset
-  lonlat       = c(-110.97, 32.22),             # Tucson, AZ (longitude, latitude)
-  pars         = "T2M",                          # 2-metre mean air temperature (°C)
-  dates        = c("1984-01-01", "2024-12-31"), # full 41-year record
-  temporal_api = "monthly"                       # monthly resolution
-)
+data_file <- here("data", "tucson_T2M_monthly_1984-2024.csv")
+
+if (file.exists(data_file)) {
+  raw <- read.csv(data_file)
+} else {
+  raw <- get_power(
+    community    = "ag",
+    lonlat       = c(-110.97, 32.22),
+    pars         = "T2M",
+    dates        = c("1984-01-01", "2024-12-31"),
+    temporal_api = "monthly"
+  )
+  write.csv(raw, data_file, row.names = FALSE)
+}
 
 # Preview the raw API response structure
 head(raw, 14) |> kable(caption = "Raw NASA POWER response (first 14 rows)")
@@ -364,10 +373,8 @@ The visualization below encodes all 492 month–year combinations simultaneously
 #| label: particle-field
 #| echo: true
 
-library(htmltools)
-
 # ── Output path ────────────────────────────────────────────────────────────
-out_dir  <- "/Users/Vani/Documents/My R/Viz Challenge 2026/Data-Viz-Challenge-2026/Data Viz Challenge_Mar2026/Tucon temperatures/output"
+out_dir  <- here("output")
 out_file <- file.path(out_dir, "tucson-vanishing-winters-interactive.html")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -868,7 +875,7 @@ Forty-one years of monthly data reveal a clear and accelerating warming trend in
 | **Coolest year on record** | `r coolest$year` (`r paste0(round(coolest$mean_anomaly, 2), "°C")` vs baseline) |
 :::
 
-The warming is not confined to summer. The monthly heat calendar and rose chart both show that anomalous warmth has spread into spring and autumn — months that once provided a thermal buffer for the city. Winters are shorter, milder, and less reliably cool than they were in the 1980s.
+The warming is not confined to summesr. The monthly heat calendar and rose chart both show that anomalous warmth has spread into spring and autumn — months that once provided a thermal buffer for the city. Winters are shorter, milder, and less reliably cool than they were in the 1980s.
 
 Tucson's blues are fading. The reds are here to stay.
 
