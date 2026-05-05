@@ -62,7 +62,7 @@ animated grid of particles:
 |---|---|
 | 🌐 Full report (Quarto document + all charts) | [Live Site](https://vanishreev.github.io/Tucson-vanishing-winters/) |
 | ✨ Standalone interactive particle field | [Open Interactive](https://vanishreev.github.io/Tucson-vanishing-winters/output/tucson-vanishing-winters-interactive.html) |
-| 💾 Offline | Download `tucson-vanishing-winters.html` from the root of this repo and open in any modern browser |
+| 💾 Offline | Download `tucson-vanishing-winters.html` from the script folder of this repo and open in any modern browser |
 
 ---
 
@@ -73,22 +73,30 @@ To render the document from source:
 **Requirements**
 - R (≥ 4.1)
 - Quarto (≥ 1.3)
-- Internet connection (for the NASA POWER API call on first render)
 
 **Install R packages**
 ```r
 install.packages(c("nasapower", "dplyr", "tidyr", "lubridate", "jsonlite",
-                   "htmltools", "ggplot2", "ggtext", "glue", "knitr", "scales"))
+                   "htmltools", "ggplot2", "ggtext", "glue", "knitr", "scales", "here"))
 ```
 
 **Render**
+
+Run the following from the project root directory (`tucson-vanishing-winters/`):
+
 ```bash
-quarto render tucson-vanishing-winters.qmd
+quarto render script/tucson-vanishing-winters.qmd
 ```
 
-> The data acquisition chunk calls the NASA POWER API live and caches
-> the result. Subsequent renders use the cache and do not require an
-> API call.
+> The raw data is pre-downloaded and stored in `data/tucson_T2M_monthly_1984-2024.csv`. No API call or internet connection is required.
+
+**Expected output**
+
+After rendering, two files are created:
+- `script/tucson-vanishing-winters.html` — full report with all charts
+- `output/tucson-vanishing-winters-interactive.html` — standalone interactive particle field
+
+Open either file in any modern browser.
 
 ---
 
@@ -153,12 +161,16 @@ while remaining anchored to the underlying data.
 tucson-vanishing-winters/
 ├── README.md
 ├── LICENSE
-├── tucson-vanishing-winters.qmd            # Source document
-├── tucson-vanishing-winters.html           # Self-contained rendered output
+├── .gitignore
+├── data/
+│   └── tucson_T2M_monthly_1984-2024.csv     
+├── script/
+│   ├── tucson-vanishing-winters.qmd          
+│   └── tucson-vanishing-winters.html          
 └── output/
-    └── tucson-vanishing-winters-interactive.html   # Standalone interactive particle field
-```
+    └── tucson-vanishing-winters-interactive.html
 
+```
 ---
 
 ## Citation
