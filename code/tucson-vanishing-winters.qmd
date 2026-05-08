@@ -194,6 +194,7 @@ One stripe per year, colored by its annual mean temperature anomaly. No axes, no
 ```{r}
 #| label: warming-stripes
 #| fig-height: 3
+#| fig-alt: "Tucson Warming Stripes: one vertical stripe per year from 1984 to 2024, colored by annual mean temperature anomaly relative to the 41-year baseline. Early years (1984–1999) are predominantly blue, indicating below-average temperatures. From the 2000s onward, stripes shift toward white and then deep red, with 2020–2024 among the warmest on record. The rightward intensification of red illustrates a clear and accelerating warming trend in Tucson over four decades."
 
 annual_summary |>
   ggplot(aes(x = year, y = 1, fill = mean_anomaly)) +
@@ -231,6 +232,7 @@ Annual mean anomalies shown as bars, with a LOESS smoother overlaid to reveal th
 ```{r}
 #| label: anomaly-trend
 #| fig-height: 4.5
+#| fig-alt: "Annual Temperature Anomaly bar chart for Tucson, AZ (1984–2024). Each bar represents one year's mean temperature anomaly relative to the per-month 41-year baseline. Blue bars (below-average years) dominate the 1980s and early 1990s, while red bars (above-average years) become increasingly common from the 2000s onward. The last decade (2015–2024) shows consistently positive anomalies, with the hottest year reaching approximately +1.5°C above baseline. A LOESS trend line confirms a steady upward trajectory across the full 41-year period."
 
 hottest_label <- annual_summary |> slice_max(mean_anomaly, n = 1)
 coolest_label <- annual_summary |> slice_min(mean_anomaly, n = 1)
@@ -281,6 +283,7 @@ Each cell is one (month, year) combination. Reading down a column shows how an e
 ```{r}
 #| label: monthly-heat-calendar
 #| fig-height: 5
+#| fig-alt: "Monthly Temperature Anomaly Calendar heatmap for Tucson, AZ (1984–2024). Rows represent the 12 calendar months (January at top, December at bottom); columns represent years 1984 to 2024. Each cell is colored by that month's temperature anomaly versus its own 41-year average: blue for cooler-than-average, white for near-average, and red for warmer-than-average months. The left half of the calendar (1984–early 2000s) contains substantial blue, especially in winter and spring months. The right half (2010–2024) is dominated by red across nearly all months and seasons, showing that warming has spread well beyond summer into spring, autumn, and winter."
 
 monthly_anomaly |>
   mutate(month_fct = factor(month.abb[month], levels = rev(month.abb))) |>
@@ -383,7 +386,7 @@ dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 particle_html_str <- paste0(
 '
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Tucson \u00b7 Month \u00d7 Year Particle Field \u00b7 1984\u20132024</title>
@@ -405,12 +408,12 @@ canvas { display:block; position:absolute; top:0; left:0; }
   display:flex; align-items:center; justify-content:space-between; gap:16px;
 }
 #header .title-block { display:flex; flex-direction:column; gap:1px; white-space:nowrap; }
-#header .title-main { font-size:22px; font-weight:700; color:rgba(220,200,160,0.92); letter-spacing:0.01em; line-height:1.1; }
-#header .title-sub  { font-size:10px; font-style:italic; color:rgba(220,200,160,0.82); letter-spacing:0.04em; margin-top:1px; }
-#header .desc  { font-size:9.5px; color:rgba(220,200,160,0.82); line-height:1.5; text-align:center; flex:1; }
+#header .title-main { font-size:22px; font-weight:700; color:rgba(220,200,160,0.92); letter-spacing:0.01em; line-height:1.1; margin:0; }
+#header .title-sub  { font-size:10px; font-style:italic; color:rgba(220,200,160,0.82); letter-spacing:0.04em; margin-top:1px; margin-bottom:0; }
+#header .desc  { font-size:10px; color:rgba(220,200,160,0.82); line-height:1.5; text-align:center; flex:1; }
 #header .keys  { display:flex; gap:14px; white-space:nowrap; }
 #header .keys span {
-  font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase;
+  font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
   display:flex; align-items:center; gap:6px; color:rgba(220,200,160,0.82);
 }
 #header .keys span::before { content:\'\'; width:18px; height:2.5px; border-radius:1px; flex-shrink:0; }
@@ -425,9 +428,9 @@ canvas { display:block; position:absolute; top:0; left:0; }
 }
 .stat { text-align:center; min-width:90px; }
 .stat .val { font-size:14px; font-weight:700; }
-.stat .lbl { font-size:7px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(220,200,160,0.82); margin-top:2px; line-height:1.4; }
+.stat .lbl { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(220,200,160,0.82); margin-top:2px; line-height:1.4; }
 #slider-wrap { flex:1; display:flex; flex-direction:column; gap:4px; }
-#slider-wrap label { font-size:7.5px; letter-spacing:0.13em; text-transform:uppercase; color:rgba(220,200,160,0.82); text-align:center; }
+#slider-wrap label { font-size:10px; letter-spacing:0.13em; text-transform:uppercase; color:rgba(220,200,160,0.82); text-align:center; }
 input[type=range] {
   width:100%; height:4px; cursor:pointer;
   -webkit-appearance:none; appearance:none; border-radius:2px; outline:none; border:none;
@@ -474,7 +477,7 @@ input[type=range]::-webkit-slider-thumb {
 <body>
 <div id="border-frame"></div>
 <div id="wrap">
-  <canvas id="c"></canvas>
+  <canvas id="c" role="img" aria-label="Interactive particle field of Tucson temperature anomalies 1984-2024. Each column of particles is a year; each row is a calendar month. Color shows anomaly versus the 41-year per-month baseline: blue for cooler-than-average, red for warmer-than-average. The field shifts from predominantly blue on the left (1980s-1990s) to predominantly red on the right (2010s-2024), showing accelerating warming.">Interactive particle field: Tucson monthly temperature anomalies 1984-2024. Use the year slider and hover over month rows to explore the data.</canvas>
   <div id="month-gutter">
     <div class="m-label">Jan</div>
     <div class="m-label">Feb</div>
@@ -490,12 +493,12 @@ input[type=range]::-webkit-slider-thumb {
     <div class="m-label">Dec</div>
   </div>
   <div id="bar-panel">
-    <canvas id="bar-c"></canvas>
+    <canvas id="bar-c" role="img" aria-label="Bar chart showing the mean temperature anomaly for each of the 12 calendar months in the currently selected year. Bars are red for warmer-than-average months and blue for cooler-than-average months, relative to each month 41-year baseline. Updates as the year slider moves.">Monthly anomaly bar chart for the selected year. Updates as you move the year slider.</canvas>
   </div>
   <div id="header">
     <div class="title-block">
-      <span class="title-main">Tucson\u2019s Vanishing Winters</span>
-      <span class="title-sub">Watch the Blues Fade and Reds Take Over</span>
+      <h1 class="title-main">Tucson\u2019s Vanishing Winters</h1>
+      <h2 class="title-sub">Watch the Blues Fade and Reds Take Over</h2>
     </div>
     <div class="desc">
       Y-axis = month of year (Jan at top \u2192 Dec at bottom) \u00b7 X-axis = year (1984 \u2192 2024)<br>
@@ -512,7 +515,7 @@ input[type=range]::-webkit-slider-thumb {
     <div id="slider-wrap">
       <label>\u25c4 drag to highlight a year \u25ba</label>
       <input type="range" id="slider" min="1984" max="2024" value="1984" step="1">
-      <label id="yr-lbl" style="color:rgba(220,200,160,0.88); font-size:9px; letter-spacing:0.1em;">
+      <label id="yr-lbl" style="color:rgba(220,200,160,0.88); font-size:10px; letter-spacing:0.1em;">
         Year: 1984 \u2014 hover a month row to inspect
       </label>
     </div>
@@ -850,7 +853,9 @@ htmltools::browsable(
     height         = "620px",
     style          = "border:none; display:block;",
     scrolling      = "no",
-    allowfullscreen = NA
+    allowfullscreen = NA,
+    role           = "img",
+    `aria-label`   = "Interactive particle field visualization of Tucson temperature anomalies from 1984 to 2024. Each column represents a year and each row a calendar month. Particle color encodes the temperature anomaly relative to each month's 41-year baseline: blue for cooler-than-average, red for warmer-than-average. Early years (1984-1999) are predominantly blue; recent years (2010-2024) are dominated by red, showing that warming has spread across all seasons. The mean anomaly shifted from approximately -0.5 degrees C in the first decade to over +1 degree C in the last decade. Use the year slider to scrub through time and hover over month rows to inspect individual anomaly values."
   )
 )
 ```

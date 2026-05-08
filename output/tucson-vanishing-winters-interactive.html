@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Tucson · Month × Year Particle Field · 1984–2024</title>
@@ -22,12 +22,12 @@ canvas { display:block; position:absolute; top:0; left:0; }
   display:flex; align-items:center; justify-content:space-between; gap:16px;
 }
 #header .title-block { display:flex; flex-direction:column; gap:1px; white-space:nowrap; }
-#header .title-main { font-size:22px; font-weight:700; color:rgba(220,200,160,0.92); letter-spacing:0.01em; line-height:1.1; }
-#header .title-sub  { font-size:10px; font-style:italic; color:rgba(220,200,160,0.82); letter-spacing:0.04em; margin-top:1px; }
-#header .desc  { font-size:9.5px; color:rgba(220,200,160,0.82); line-height:1.5; text-align:center; flex:1; }
+#header .title-main { font-size:22px; font-weight:700; color:rgba(220,200,160,0.92); letter-spacing:0.01em; line-height:1.1; margin:0; }
+#header .title-sub  { font-size:10px; font-style:italic; color:rgba(220,200,160,0.82); letter-spacing:0.04em; margin-top:1px; margin-bottom:0; }
+#header .desc  { font-size:10px; color:rgba(220,200,160,0.82); line-height:1.5; text-align:center; flex:1; }
 #header .keys  { display:flex; gap:14px; white-space:nowrap; }
 #header .keys span {
-  font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase;
+  font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
   display:flex; align-items:center; gap:6px; color:rgba(220,200,160,0.82);
 }
 #header .keys span::before { content:''; width:18px; height:2.5px; border-radius:1px; flex-shrink:0; }
@@ -42,9 +42,9 @@ canvas { display:block; position:absolute; top:0; left:0; }
 }
 .stat { text-align:center; min-width:90px; }
 .stat .val { font-size:14px; font-weight:700; }
-.stat .lbl { font-size:7px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(220,200,160,0.82); margin-top:2px; line-height:1.4; }
+.stat .lbl { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(220,200,160,0.82); margin-top:2px; line-height:1.4; }
 #slider-wrap { flex:1; display:flex; flex-direction:column; gap:4px; }
-#slider-wrap label { font-size:7.5px; letter-spacing:0.13em; text-transform:uppercase; color:rgba(220,200,160,0.82); text-align:center; }
+#slider-wrap label { font-size:10px; letter-spacing:0.13em; text-transform:uppercase; color:rgba(220,200,160,0.82); text-align:center; }
 input[type=range] {
   width:100%; height:4px; cursor:pointer;
   -webkit-appearance:none; appearance:none; border-radius:2px; outline:none; border:none;
@@ -91,7 +91,7 @@ input[type=range]::-webkit-slider-thumb {
 <body>
 <div id="border-frame"></div>
 <div id="wrap">
-  <canvas id="c"></canvas>
+  <canvas id="c" role="img" aria-label="Interactive particle field of Tucson temperature anomalies 1984-2024. Each column of particles is a year; each row is a calendar month. Color shows anomaly versus the 41-year per-month baseline: blue for cooler-than-average, red for warmer-than-average. The field shifts from predominantly blue on the left (1980s-1990s) to predominantly red on the right (2010s-2024), showing accelerating warming.">Interactive particle field: Tucson monthly temperature anomalies 1984-2024. Use the year slider and hover over month rows to explore the data.</canvas>
   <div id="month-gutter">
     <div class="m-label">Jan</div>
     <div class="m-label">Feb</div>
@@ -107,12 +107,12 @@ input[type=range]::-webkit-slider-thumb {
     <div class="m-label">Dec</div>
   </div>
   <div id="bar-panel">
-    <canvas id="bar-c"></canvas>
+    <canvas id="bar-c" role="img" aria-label="Bar chart showing the mean temperature anomaly for each of the 12 calendar months in the currently selected year. Bars are red for warmer-than-average months and blue for cooler-than-average months, relative to each month 41-year baseline. Updates as the year slider moves.">Monthly anomaly bar chart for the selected year. Updates as you move the year slider.</canvas>
   </div>
   <div id="header">
     <div class="title-block">
-      <span class="title-main">Tucson’s Vanishing Winters</span>
-      <span class="title-sub">Watch the Blues Fade and Reds Take Over</span>
+      <h1 class="title-main">Tucson’s Vanishing Winters</h1>
+      <h2 class="title-sub">Watch the Blues Fade and Reds Take Over</h2>
     </div>
     <div class="desc">
       Y-axis = month of year (Jan at top → Dec at bottom) · X-axis = year (1984 → 2024)<br>
@@ -129,7 +129,7 @@ input[type=range]::-webkit-slider-thumb {
     <div id="slider-wrap">
       <label>◄ drag to highlight a year ►</label>
       <input type="range" id="slider" min="1984" max="2024" value="1984" step="1">
-      <label id="yr-lbl" style="color:rgba(220,200,160,0.88); font-size:9px; letter-spacing:0.1em;">
+      <label id="yr-lbl" style="color:rgba(220,200,160,0.88); font-size:10px; letter-spacing:0.1em;">
         Year: 1984 — hover a month row to inspect
       </label>
     </div>
